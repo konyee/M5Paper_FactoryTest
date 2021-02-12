@@ -1,23 +1,17 @@
 #include "frame_main.h"
 #include "frame_setting.h"
 #include "frame_keyboard.h"
-#include "frame_factorytest.h"
 #include "frame_wifiscan.h"
-// #include "frame_lifegame.h"
 #include "frame_fileindex.h"
-#include "frame_compare.h"
 #include "frame_home.h"
 
 enum
 {
-    kKeyFactoryTest = 0,
-    kKeySetting,
+    kKeySetting = 0,
     kKeyKeyboard,
     kKeyWifiScan,
     kKeySDFile,
-    kKeyCompare,
     kKeyHome,
-    kKeyLifeGame
 };
 
 #define KEY_W 92
@@ -47,18 +41,6 @@ void key_keyboard_cb(epdgui_args_vector_t &args)
     *((int*)(args[0])) = 0;
 }
 
-void key_factorytest_cb(epdgui_args_vector_t &args)
-{
-    Frame_Base *frame = EPDGUI_GetFrame("Frame_FactoryTest");
-    if(frame == NULL)
-    {
-        frame = new Frame_FactoryTest();
-        EPDGUI_AddFrame("Frame_FactoryTest", frame);
-    }
-    EPDGUI_PushFrame(frame);
-    *((int*)(args[0])) = 0;
-}
-
 void key_wifiscan_cb(epdgui_args_vector_t &args)
 {
     Frame_Base *frame = EPDGUI_GetFrame("Frame_WifiScan");
@@ -71,33 +53,9 @@ void key_wifiscan_cb(epdgui_args_vector_t &args)
     *((int*)(args[0])) = 0;
 }
 
-// void key_lifegame_cb(epdgui_args_vector_t &args)
-// {
-//     Frame_Base *frame = EPDGUI_GetFrame("Frame_Lifegame");
-//     if(frame == NULL)
-//     {
-//         frame = new Frame_Lifegame();
-//         EPDGUI_AddFrame("Frame_Lifegame", frame);
-//     }
-//     EPDGUI_PushFrame(frame);
-//     *((int*)(args[0])) = 0;
-// }
-
 void key_sdfile_cb(epdgui_args_vector_t &args)
 {
     Frame_Base *frame = new Frame_FileIndex("/");
-    EPDGUI_PushFrame(frame);
-    *((int*)(args[0])) = 0;
-}
-
-void key_compare_cb(epdgui_args_vector_t &args)
-{
-    Frame_Base *frame = EPDGUI_GetFrame("Frame_Compare");
-    if(frame == NULL)
-    {
-        frame = new Frame_Compare();
-        EPDGUI_AddFrame("Frame_Compare", frame);
-    }
     EPDGUI_PushFrame(frame);
     *((int*)(args[0])) = 0;
 }
@@ -150,35 +108,18 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _key[kKeyKeyboard]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _key[kKeyKeyboard]->Bind(EPDGUI_Button::EVENT_RELEASED, key_keyboard_cb);
 
-    _key[kKeyFactoryTest]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_factorytest_92x92);
-    *(_key[kKeyFactoryTest]->CanvasPressed()) = *(_key[kKeyFactoryTest]->CanvasNormal());
-    _key[kKeyFactoryTest]->CanvasPressed()->ReverseColor();
-    _key[kKeyFactoryTest]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
-    _key[kKeyFactoryTest]->Bind(EPDGUI_Button::EVENT_RELEASED, key_factorytest_cb);
-
     _key[kKeyWifiScan]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_wifi_92x92);
     *(_key[kKeyWifiScan]->CanvasPressed()) = *(_key[kKeyWifiScan]->CanvasNormal());
     _key[kKeyWifiScan]->CanvasPressed()->ReverseColor();
     _key[kKeyWifiScan]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _key[kKeyWifiScan]->Bind(EPDGUI_Button::EVENT_RELEASED, key_wifiscan_cb);
 
-    // _key[kKeyLifeGame]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_lifegame_92x92);
-    // *(_key[kKeyLifeGame]->CanvasPressed()) = *(_key[kKeyLifeGame]->CanvasNormal());
-    // _key[kKeyLifeGame]->CanvasPressed()->ReverseColor();
-    // _key[kKeyLifeGame]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
-    // _key[kKeyLifeGame]->Bind(EPDGUI_Button::EVENT_RELEASED, key_lifegame_cb);
 
     _key[kKeySDFile]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_sdcard_92x92);
     *(_key[kKeySDFile]->CanvasPressed()) = *(_key[kKeySDFile]->CanvasNormal());
     _key[kKeySDFile]->CanvasPressed()->ReverseColor();
     _key[kKeySDFile]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _key[kKeySDFile]->Bind(EPDGUI_Button::EVENT_RELEASED, key_sdfile_cb);
-
-    _key[kKeyCompare]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_compare_92x92);
-    *(_key[kKeyCompare]->CanvasPressed()) = *(_key[kKeyCompare]->CanvasNormal());
-    _key[kKeyCompare]->CanvasPressed()->ReverseColor();
-    _key[kKeyCompare]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
-    _key[kKeyCompare]->Bind(EPDGUI_Button::EVENT_RELEASED, key_compare_cb);
 
     _key[kKeyHome]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_home_92x92);
     *(_key[kKeyHome]->CanvasPressed()) = *(_key[kKeyHome]->CanvasNormal());

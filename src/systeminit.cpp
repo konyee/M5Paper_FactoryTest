@@ -50,8 +50,7 @@ void SysInit_Start(void)
 
     disableCore0WDT();
     xTaskCreatePinnedToCore(SysInit_Loading, "SysInit_Loading", 4096, NULL, 1, NULL, 0);
-    // SysInit_UpdateInfo("Initializing SD card...");
-    bool is_factory_test = false;
+    SysInit_UpdateInfo("Initializing SD card...");
     SPI.begin(14, 13, 12, 4);
     ret = SD.begin(4, SPI, 20000000);
     if (ret == false)
@@ -61,10 +60,6 @@ void SysInit_Start(void)
         log_e("Failed to initialize SD card.");
         SysInit_UpdateInfo("[ERROR] Failed to initialize SD card.");
         // WaitForUser();
-    }
-    else
-    {
-        is_factory_test = SD.exists("/__factory_test_flag__");
     }
 
     SysInit_UpdateInfo("Initializing Touch pad...");
@@ -80,7 +75,7 @@ void SysInit_Start(void)
     LoadSetting();
 
     M5EPD_Canvas _initcanvas(&M5.EPD);
-    if ((!is_factory_test) && SD.exists("/font.ttf"))
+    if (SD.exists("/font.ttf"))
     {
         _initcanvas.loadFont("/font.ttf", SD);
         SetTTFLoaded(true);
@@ -89,78 +84,52 @@ void SysInit_Start(void)
     {
         _initcanvas.loadFont(binaryttf, sizeof(binaryttf));
         SetTTFLoaded(false);
-        // is_factory_test = true;
     }
 
-    if (is_factory_test)
-    {
-        SysInit_UpdateInfo("$OK");
-    }
-    else
-    {
-        SysInit_UpdateInfo("Initializing system...");
-    }
+    SysInit_UpdateInfo("Initializing system...");
 
     _initcanvas.createRender(26, 128);
 
     Frame_Main *frame_main = new Frame_Main();
     EPDGUI_PushFrame(frame_main);
-    Frame_FactoryTest *frame_factorytest = new Frame_FactoryTest();
-    EPDGUI_AddFrame("Frame_FactoryTest", frame_factorytest);
-    log_e("factory_test: %d", is_factory_test);
-    if (!is_factory_test)
+    Frame_Setting *frame_setting = new Frame_Setting();
+    EPDGUI_AddFrame("Frame_Setting", frame_setting);
+    Frame_Setting_Wallpaper *frame_wallpaper = new Frame_Setting_Wallpaper();
+    EPDGUI_AddFrame("Frame_Setting_Wallpaper", frame_wallpaper);
+    Frame_Keyboard *frame_keyboard = new Frame_Keyboard(0);
+    EPDGUI_AddFrame("Frame_Keyboard", frame_keyboard);
+    Frame_WifiScan *frame_wifiscan = new Frame_WifiScan();
+    EPDGUI_AddFrame("Frame_WifiScan", frame_wifiscan);
+    Frame_WifiPassword *frame_wifipassword = new Frame_WifiPassword();
+    EPDGUI_AddFrame("Frame_WifiPassword", frame_wifipassword);
+    Frame_Home *frame_home = new Frame_Home();
+    EPDGUI_AddFrame("Frame_Home", frame_home);
+
+    if (isWiFiConfiged())
     {
-        log_e("Normal start.");
-        Frame_Setting *frame_setting = new Frame_Setting();
-        EPDGUI_AddFrame("Frame_Setting", frame_setting);
-        Frame_Setting_Wallpaper *frame_wallpaper = new Frame_Setting_Wallpaper();
-        EPDGUI_AddFrame("Frame_Setting_Wallpaper", frame_wallpaper);
-        // Frame_Setting_Language *frame_language = new Frame_Setting_Language();
-        // EPDGUI_AddFrame("Frame_Setting_Language", frame_language);
-        Frame_Keyboard *frame_keyboard = new Frame_Keyboard(0);
-        EPDGUI_AddFrame("Frame_Keyboard", frame_keyboard);
-        Frame_WifiScan *frame_wifiscan = new Frame_WifiScan();
-        EPDGUI_AddFrame("Frame_WifiScan", frame_wifiscan);
-        Frame_WifiPassword *frame_wifipassword = new Frame_WifiPassword();
-        EPDGUI_AddFrame("Frame_WifiPassword", frame_wifipassword);
-        // Frame_Lifegame *frame_lifegame = new Frame_Lifegame();
-        // EPDGUI_AddFrame("Frame_Lifegame", frame_lifegame);
-        Frame_Compare *frame_compare = new Frame_Compare();
-        EPDGUI_AddFrame("Frame_Compare", frame_compare);
-        Frame_Home *frame_home = new Frame_Home();
-        EPDGUI_AddFrame("Frame_Home", frame_home);
-
-        if (isWiFiConfiged())
+        SysInit_UpdateInfo("Connect to " + GetWifiSSID() + "...");
+        WiFi.begin(GetWifiSSID().c_str(), GetWifiPassword().c_str());
+        uint32_t t = millis();
+        while (1)
         {
-            SysInit_UpdateInfo("Connect to " + GetWifiSSID() + "...");
-            WiFi.begin(GetWifiSSID().c_str(), GetWifiPassword().c_str());
-            uint32_t t = millis();
-            while (1)
+            if (millis() - t > 8000)
             {
-                if (millis() - t > 8000)
-                {
-                    break;
-                }
+                break;
+            }
 
-                if (WiFi.status() == WL_CONNECTED)
-                {
-                    frame_wifiscan->SetConnected(GetWifiSSID(), WiFi.RSSI());
-                    log_e("Connected to WiFi: %s %d",GetWifiSSID(), WiFi.RSSI());
-                    break;
-                }
+            if (WiFi.status() == WL_CONNECTED)
+            {
+                frame_wifiscan->SetConnected(GetWifiSSID(), WiFi.RSSI());
+                log_e("Connected to WiFi: %s %d",GetWifiSSID(), WiFi.RSSI());
+                break;
             }
         }
     }
-
     log_d("done");
 
-    while (uxQueueMessagesWaiting(xQueue_Info))
-        ;
+    while (uxQueueMessagesWaiting(xQueue_Info));
 
-    if (!is_factory_test)
-    {
-        SysInit_UpdateInfo("$OK");
-    }
+    SysInit_UpdateInfo("$OK");
 
     Serial.println("OK");
 
