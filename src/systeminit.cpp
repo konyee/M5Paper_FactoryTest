@@ -11,10 +11,10 @@ QueueHandle_t xQueue_Info = xQueueCreate(20, sizeof(uint32_t));
 void WaitForUser(void)
 {
     SysInit_UpdateInfo("$ERR");
-    while(1)
+    while (1)
     {
         M5.update();
-        if(M5.BtnP.wasReleased())
+        if (M5.BtnP.wasReleased())
         {
             SysInit_UpdateInfo("$RESUME");
             return;
@@ -51,15 +51,15 @@ void SysInit_Start(void)
     disableCore0WDT();
     xTaskCreatePinnedToCore(SysInit_Loading, "SysInit_Loading", 4096, NULL, 1, NULL, 0);
     // SysInit_UpdateInfo("Initializing SD card...");
-    bool is_factory_test;
+    bool is_factory_test = false;
     SPI.begin(14, 13, 12, 4);
     ret = SD.begin(4, SPI, 20000000);
-    if(ret == false)
+    if (ret == false)
     {
-        is_factory_test = true;
+        // is_factory_test = true;
         SetInitStatus(0, 0);
-        // log_e("Failed to initialize SD card.");
-        // SysInit_UpdateInfo("[ERROR] Failed to initialize SD card.");
+        log_e("Failed to initialize SD card.");
+        SysInit_UpdateInfo("[ERROR] Failed to initialize SD card.");
         // WaitForUser();
     }
     else
@@ -68,7 +68,7 @@ void SysInit_Start(void)
     }
 
     SysInit_UpdateInfo("Initializing Touch pad...");
-    if(M5.TP.begin(21, 22, 36) != ESP_OK)
+    if (M5.TP.begin(21, 22, 36) != ESP_OK)
     {
         SetInitStatus(1, 0);
         log_e("Touch pad initialization failed.");
@@ -78,9 +78,9 @@ void SysInit_Start(void)
 
     M5.BatteryADCBegin();
     LoadSetting();
-    
+
     M5EPD_Canvas _initcanvas(&M5.EPD);
-    if((!is_factory_test) && SD.exists("/font.ttf"))
+    if ((!is_factory_test) && SD.exists("/font.ttf"))
     {
         _initcanvas.loadFont("/font.ttf", SD);
         SetTTFLoaded(true);
@@ -89,11 +89,10 @@ void SysInit_Start(void)
     {
         _initcanvas.loadFont(binaryttf, sizeof(binaryttf));
         SetTTFLoaded(false);
-        SetLanguage(LANGUAGE_EN);
-        is_factory_test = true;
+        // is_factory_test = true;
     }
 
-    if(is_factory_test)
+    if (is_factory_test)
     {
         SysInit_UpdateInfo("$OK");
     }
@@ -108,57 +107,61 @@ void SysInit_Start(void)
     EPDGUI_PushFrame(frame_main);
     Frame_FactoryTest *frame_factorytest = new Frame_FactoryTest();
     EPDGUI_AddFrame("Frame_FactoryTest", frame_factorytest);
-    if(!is_factory_test)
+    log_e("factory_test: %d", is_factory_test);
+    if (!is_factory_test)
     {
+        log_e("Normal start.");
         Frame_Setting *frame_setting = new Frame_Setting();
         EPDGUI_AddFrame("Frame_Setting", frame_setting);
         Frame_Setting_Wallpaper *frame_wallpaper = new Frame_Setting_Wallpaper();
         EPDGUI_AddFrame("Frame_Setting_Wallpaper", frame_wallpaper);
-        Frame_Setting_Language *frame_language = new Frame_Setting_Language();
-        EPDGUI_AddFrame("Frame_Setting_Language", frame_language);
+        // Frame_Setting_Language *frame_language = new Frame_Setting_Language();
+        // EPDGUI_AddFrame("Frame_Setting_Language", frame_language);
         Frame_Keyboard *frame_keyboard = new Frame_Keyboard(0);
         EPDGUI_AddFrame("Frame_Keyboard", frame_keyboard);
         Frame_WifiScan *frame_wifiscan = new Frame_WifiScan();
         EPDGUI_AddFrame("Frame_WifiScan", frame_wifiscan);
         Frame_WifiPassword *frame_wifipassword = new Frame_WifiPassword();
         EPDGUI_AddFrame("Frame_WifiPassword", frame_wifipassword);
-        Frame_Lifegame *frame_lifegame = new Frame_Lifegame();
-        EPDGUI_AddFrame("Frame_Lifegame", frame_lifegame);
+        // Frame_Lifegame *frame_lifegame = new Frame_Lifegame();
+        // EPDGUI_AddFrame("Frame_Lifegame", frame_lifegame);
         Frame_Compare *frame_compare = new Frame_Compare();
         EPDGUI_AddFrame("Frame_Compare", frame_compare);
         Frame_Home *frame_home = new Frame_Home();
         EPDGUI_AddFrame("Frame_Home", frame_home);
 
-        if(isWiFiConfiged())
+        if (isWiFiConfiged())
         {
             SysInit_UpdateInfo("Connect to " + GetWifiSSID() + "...");
             WiFi.begin(GetWifiSSID().c_str(), GetWifiPassword().c_str());
             uint32_t t = millis();
             while (1)
             {
-                if(millis() - t > 8000)
+                if (millis() - t > 8000)
                 {
                     break;
                 }
 
-                if(WiFi.status() == WL_CONNECTED)
+                if (WiFi.status() == WL_CONNECTED)
                 {
                     frame_wifiscan->SetConnected(GetWifiSSID(), WiFi.RSSI());
+                    log_e("Connected to WiFi: %s %d",GetWifiSSID(), WiFi.RSSI());
                     break;
                 }
             }
         }
     }
-    
+
     log_d("done");
 
-    while(uxQueueMessagesWaiting(xQueue_Info));
-    
-    if(!is_factory_test)
+    while (uxQueueMessagesWaiting(xQueue_Info))
+        ;
+
+    if (!is_factory_test)
     {
         SysInit_UpdateInfo("$OK");
     }
-    
+
     Serial.println("OK");
 
     delay(500);
@@ -202,7 +205,7 @@ void SysInit_Loading(void *pvParameters)
     uint32_t time = 0;
     while (1)
     {
-        if(millis() - time > 250)
+        if (millis() - time > 250)
         {
             time = millis();
             LoadingIMG.pushImage(0, 0, 96, 96, kLD[i]);
@@ -213,29 +216,29 @@ void SysInit_Loading(void *pvParameters)
                 i = 0;
             }
         }
-        
-        if(xQueueReceive(xQueue_Info, &p, 0))
+
+        if (xQueueReceive(xQueue_Info, &p, 0))
         {
             String str(p);
             free(p);
-            if(str.indexOf("$OK") >= 0)
+            if (str.indexOf("$OK") >= 0)
             {
                 LoadingIMG.pushImage(0, 0, 96, 96, ImageResource_loading_success_96x96);
                 LoadingIMG.pushCanvas(220, kPosy + 80, UPDATE_MODE_GL16);
                 break;
             }
-            else if(str.indexOf("$ERR") >= 0)
+            else if (str.indexOf("$ERR") >= 0)
             {
                 LoadingIMG.pushImage(0, 0, 96, 96, ImageResource_loading_error_96x96);
                 LoadingIMG.pushCanvas(220, kPosy + 80, UPDATE_MODE_GL16);
                 LoadingIMG.fillCanvas(0);
-                while(1)
+                while (1)
                 {
-                    if(xQueueReceive(xQueue_Info, &p, 0))
+                    if (xQueueReceive(xQueue_Info, &p, 0))
                     {
                         String str(p);
                         free(p);
-                        if(str.indexOf("$RESUME") >= 0)
+                        if (str.indexOf("$RESUME") >= 0)
                         {
                             LoadingIMG.pushCanvas(220, kPosy + 80, UPDATE_MODE_GC16);
                             break;
@@ -250,16 +253,16 @@ void SysInit_Loading(void *pvParameters)
                 Info.pushCanvas(0, kPosy, UPDATE_MODE_DU);
             }
         }
-    } 
+    }
     vTaskDelete(NULL);
 }
 
 void SysInit_UpdateInfo(String info)
 {
-    char *p = (char*)malloc(info.length() + 1);
+    char *p = (char *)malloc(info.length() + 1);
     memcpy(p, info.c_str(), info.length());
     p[info.length()] = '\0';
-    if(xQueueSend(xQueue_Info, &p, 0) == 0)
+    if (xQueueSend(xQueue_Info, &p, 0) == 0)
     {
         free(p);
     }

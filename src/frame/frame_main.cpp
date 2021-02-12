@@ -3,7 +3,7 @@
 #include "frame_keyboard.h"
 #include "frame_factorytest.h"
 #include "frame_wifiscan.h"
-#include "frame_lifegame.h"
+// #include "frame_lifegame.h"
 #include "frame_fileindex.h"
 #include "frame_compare.h"
 #include "frame_home.h"
@@ -71,17 +71,17 @@ void key_wifiscan_cb(epdgui_args_vector_t &args)
     *((int*)(args[0])) = 0;
 }
 
-void key_lifegame_cb(epdgui_args_vector_t &args)
-{
-    Frame_Base *frame = EPDGUI_GetFrame("Frame_Lifegame");
-    if(frame == NULL)
-    {
-        frame = new Frame_Lifegame();
-        EPDGUI_AddFrame("Frame_Lifegame", frame);
-    }
-    EPDGUI_PushFrame(frame);
-    *((int*)(args[0])) = 0;
-}
+// void key_lifegame_cb(epdgui_args_vector_t &args)
+// {
+//     Frame_Base *frame = EPDGUI_GetFrame("Frame_Lifegame");
+//     if(frame == NULL)
+//     {
+//         frame = new Frame_Lifegame();
+//         EPDGUI_AddFrame("Frame_Lifegame", frame);
+//     }
+//     EPDGUI_PushFrame(frame);
+//     *((int*)(args[0])) = 0;
+// }
 
 void key_sdfile_cb(epdgui_args_vector_t &args)
 {
@@ -162,11 +162,11 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _key[kKeyWifiScan]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _key[kKeyWifiScan]->Bind(EPDGUI_Button::EVENT_RELEASED, key_wifiscan_cb);
 
-    _key[kKeyLifeGame]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_lifegame_92x92);
-    *(_key[kKeyLifeGame]->CanvasPressed()) = *(_key[kKeyLifeGame]->CanvasNormal());
-    _key[kKeyLifeGame]->CanvasPressed()->ReverseColor();
-    _key[kKeyLifeGame]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
-    _key[kKeyLifeGame]->Bind(EPDGUI_Button::EVENT_RELEASED, key_lifegame_cb);
+    // _key[kKeyLifeGame]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_lifegame_92x92);
+    // *(_key[kKeyLifeGame]->CanvasPressed()) = *(_key[kKeyLifeGame]->CanvasNormal());
+    // _key[kKeyLifeGame]->CanvasPressed()->ReverseColor();
+    // _key[kKeyLifeGame]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
+    // _key[kKeyLifeGame]->Bind(EPDGUI_Button::EVENT_RELEASED, key_lifegame_cb);
 
     _key[kKeySDFile]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_sdcard_92x92);
     *(_key[kKeySDFile]->CanvasPressed()) = *(_key[kKeySDFile]->CanvasNormal());
@@ -207,50 +207,21 @@ void Frame_Main::AppName(m5epd_update_mode_t mode)
     }
     _names->setTextSize(20);
     _names->fillCanvas(0);
-    uint8_t language = GetLanguage();
+
     _names->drawString("WLAN", 20 + 46 + 3 * 136, 16);
-    if(language == LANGUAGE_JA)
-    {
-        _names->drawString("工場テスト", 20 + 46, 16);
-        _names->drawString("設定", 20 + 46 + 136, 16);
-        _names->drawString("鍵盤", 20 + 46 + 2 * 136, 16);
-    }
-    else if(language == LANGUAGE_ZH)
-    {
-        _names->drawString("出厂测试", 20 + 46, 16);
-        _names->drawString("设定", 20 + 46 + 136, 16);
-        _names->drawString("键盘", 20 + 46 + 2 * 136, 16);
-    }
-    else
-    {
-        _names->drawString("Test", 20 + 46, 16);
-        _names->drawString("Setting", 20 + 46 + 136, 16);
-        _names->drawString("Keyboard", 20 + 46 + 2 * 136, 16);
-    }
+ 
+    _names->drawString("Test", 20 + 46, 16);
+    _names->drawString("Setting", 20 + 46 + 136, 16);
+    _names->drawString("Keyboard", 20 + 46 + 2 * 136, 16);
+
     _names->pushCanvas(0, 186, mode);
-    
     _names->fillCanvas(0);
-    if(language == LANGUAGE_JA)
-    {
-        _names->drawString("メモリー", 20 + 46, 16);
-        _names->drawString("刷新比較", 20 + 46 + 136, 16);
-        _names->drawString("家", 20 + 46 + 2 * 136, 16);
-        _names->drawString("ライフゲーム", 20 + 46 + 3 * 136, 16);
-    }
-    else if(language == LANGUAGE_ZH)
-    {
-        _names->drawString("存储", 20 + 46, 16);
-        _names->drawString("刷新比较", 20 + 46 + 136, 16);
-        _names->drawString("家", 20 + 46 + 2 * 136, 16);
-        _names->drawString("生命游戏", 20 + 46 + 3 * 136, 16);
-    }
-    else
-    {
-        _names->drawString("Storage", 20 + 46, 16);
-        _names->drawString("Compare", 20 + 46 + 136, 16);
-        _names->drawString("Home", 20 + 46 + 2 * 136, 16);
-        _names->drawString("LifeGame", 20 + 46 + 3 * 136, 16);
-    }
+
+    _names->drawString("Storage", 20 + 46, 16);
+    _names->drawString("Compare", 20 + 46 + 136, 16);
+    _names->drawString("Home", 20 + 46 + 2 * 136, 16);
+    _names->drawString("LifeGame", 20 + 46 + 3 * 136, 16);
+
     _names->pushCanvas(0, 337, mode);
 }
 
