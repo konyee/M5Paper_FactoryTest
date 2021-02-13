@@ -40,10 +40,19 @@ const uint8_t *kIMGLoading[16] = {
     ImageResource_item_loading_15_32x32,
     ImageResource_item_loading_16_32x32
 };
+
 const char *wallpapers_name_en[] = {
     "M5Paper",
     "Engine",
     "Penrose Triangle"
+};
+
+const char *frame_names[] = {
+    "Setting",
+    "Keyboard",
+    "WLAN",
+    "SD",
+    "Home",
 };
 
 uint16_t global_wallpaper = DEFAULT_WALLPAPER;
@@ -120,6 +129,11 @@ const uint8_t *GetWallpaper(void)
 const char *GetWallpaperName(uint16_t wallpaper_id)
 {
     return wallpapers_name_en[wallpaper_id];
+}
+
+const char *GetMainFrameKeyName(uint16_t frameId)
+{
+    return frame_names[frameId];
 }
 
 esp_err_t LoadSetting(void)

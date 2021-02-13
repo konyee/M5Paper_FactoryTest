@@ -4,13 +4,13 @@
 #include <M5EPD.h>
 #include <nvs.h>
 
-
 #define WALLPAPER_NUM 3
 
 void SetWallpaper(uint16_t wallpaper_id);
 uint16_t GetWallpaperID(void);
 const uint8_t* GetWallpaper(void);
 const char* GetWallpaperName(uint16_t wallpaper_id);
+const char *GetMainFrameKeyName(uint16_t frameId);
 
 esp_err_t LoadSetting(void);
 esp_err_t SaveSetting(void);

@@ -5,52 +5,23 @@
 #include "frame_fileindex.h"
 #include "frame_home.h"
 
-enum
-{
-    kKeySetting = 0,
-    kKeyKeyboard,
-    kKeyWifiScan,
-    kKeySDFile,
-    kKeyHome,
-};
 
+
+#define KEYS_PER_ROW 4
 #define KEY_W 92
 #define KEY_H 92
 
-void key_setting_cb(epdgui_args_vector_t &args)
+template<class T, char const  *name>
+void onClick( epdgui_args_vector_t &args ) 
 {
-    Frame_Base *frame = EPDGUI_GetFrame("Frame_Setting");
+    Frame_Base *frame = EPDGUI_GetFrame(name);
     if(frame == NULL)
     {
-        frame = new Frame_Setting();
-        EPDGUI_AddFrame("Frame_Setting", frame);
+        frame = new T();
+        EPDGUI_AddFrame(name, frame);
     }
     EPDGUI_PushFrame(frame);
-    *((int*)(args[0])) = 0;
-}
-
-void key_keyboard_cb(epdgui_args_vector_t &args)
-{
-    Frame_Base *frame = EPDGUI_GetFrame("Frame_Keyboard");
-    if(frame == NULL)
-    {
-        frame = new Frame_Keyboard(0);
-        EPDGUI_AddFrame("Frame_Keyboard", frame);
-    }
-    EPDGUI_PushFrame(frame);
-    *((int*)(args[0])) = 0;
-}
-
-void key_wifiscan_cb(epdgui_args_vector_t &args)
-{
-    Frame_Base *frame = EPDGUI_GetFrame("Frame_WifiScan");
-    if(frame == NULL)
-    {
-        frame = new Frame_WifiScan();
-        EPDGUI_AddFrame("Frame_WifiScan", frame);
-    }
-    EPDGUI_PushFrame(frame);
-    *((int*)(args[0])) = 0;
+    *((int*)(args[0])) = 0;    
 }
 
 void key_sdfile_cb(epdgui_args_vector_t &args)
@@ -60,18 +31,49 @@ void key_sdfile_cb(epdgui_args_vector_t &args)
     *((int*)(args[0])) = 0;
 }
 
-void key_home_cb(epdgui_args_vector_t &args)
-{
-    Frame_Base *frame = EPDGUI_GetFrame("Frame_Home");
+void cb_settings(epdgui_args_vector_t &args) {
+    Frame_Base *frame = EPDGUI_GetFrame("settings");
+    if(frame == NULL)
+    {
+        frame = new Frame_Setting();
+        EPDGUI_AddFrame("settings", frame);
+    }
+    EPDGUI_PushFrame(frame);
+    *((int*)(args[0])) = 0;    
+}
+
+void cb_keyboard(epdgui_args_vector_t &args) {
+    Frame_Base *frame = EPDGUI_GetFrame("key");
+    if(frame == NULL)
+    {
+        frame = new Frame_Keyboard();
+        EPDGUI_AddFrame("key", frame);
+    }
+    EPDGUI_PushFrame(frame);
+    *((int*)(args[0])) = 0;  
+}
+
+void cb_wifi(epdgui_args_vector_t &args) {
+    Frame_Base *frame = EPDGUI_GetFrame("wifi");
+    if(frame == NULL)
+    {
+        frame = new Frame_WifiScan();
+        EPDGUI_AddFrame("wifi", frame);
+    }
+    EPDGUI_PushFrame(frame);
+    *((int*)(args[0])) = 0;  
+}
+
+void cb_home(epdgui_args_vector_t &args) {
+    Frame_Base *frame = EPDGUI_GetFrame("home");
     if(frame == NULL)
     {
         frame = new Frame_Home();
-        EPDGUI_AddFrame("Frame_Home", frame);
+        EPDGUI_AddFrame("home", frame);
     }
     EPDGUI_PushFrame(frame);
-    *((int*)(args[0])) = 0;
+    *((int*)(args[0])) = 0;  
 }
-
 
 Frame_Main::Frame_Main(void): Frame_Base(false)
 {
@@ -86,46 +88,18 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _names->createCanvas(540, 32);
     _names->setTextDatum(CC_DATUM);
     
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < kKeyCOUNT; i++)
     {
-        _key[i] = new EPDGUI_Button("测试", 20 + i * 136, 90, KEY_W, KEY_H);
+        int y=i / KEYS_PER_ROW;
+        int x=i % KEYS_PER_ROW;
+        _key[i] = new EPDGUI_Button("x", 20 + x * 136, 90+ y * 150, KEY_W, KEY_H);
     }
-
-    for(int i = 0; i < 4; i++)
-    {
-        _key[i + 4] = new EPDGUI_Button("测试", 20 + i * 136, 240, KEY_W, KEY_H);
-    }
-
-    _key[kKeySetting]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_setting_92x92);
-    *(_key[kKeySetting]->CanvasPressed()) = *(_key[kKeySetting]->CanvasNormal());
-    _key[kKeySetting]->CanvasPressed()->ReverseColor();
-    _key[kKeySetting]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
-    _key[kKeySetting]->Bind(EPDGUI_Button::EVENT_RELEASED, key_setting_cb);
-
-    _key[kKeyKeyboard]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_keyboard_92x92);
-    *(_key[kKeyKeyboard]->CanvasPressed()) = *(_key[kKeyKeyboard]->CanvasNormal());
-    _key[kKeyKeyboard]->CanvasPressed()->ReverseColor();
-    _key[kKeyKeyboard]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
-    _key[kKeyKeyboard]->Bind(EPDGUI_Button::EVENT_RELEASED, key_keyboard_cb);
-
-    _key[kKeyWifiScan]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_wifi_92x92);
-    *(_key[kKeyWifiScan]->CanvasPressed()) = *(_key[kKeyWifiScan]->CanvasNormal());
-    _key[kKeyWifiScan]->CanvasPressed()->ReverseColor();
-    _key[kKeyWifiScan]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
-    _key[kKeyWifiScan]->Bind(EPDGUI_Button::EVENT_RELEASED, key_wifiscan_cb);
-
-
-    _key[kKeySDFile]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_sdcard_92x92);
-    *(_key[kKeySDFile]->CanvasPressed()) = *(_key[kKeySDFile]->CanvasNormal());
-    _key[kKeySDFile]->CanvasPressed()->ReverseColor();
-    _key[kKeySDFile]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
-    _key[kKeySDFile]->Bind(EPDGUI_Button::EVENT_RELEASED, key_sdfile_cb);
-
-    _key[kKeyHome]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_home_92x92);
-    *(_key[kKeyHome]->CanvasPressed()) = *(_key[kKeyHome]->CanvasNormal());
-    _key[kKeyHome]->CanvasPressed()->ReverseColor();
-    _key[kKeyHome]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
-    _key[kKeyHome]->Bind(EPDGUI_Button::EVENT_RELEASED, key_home_cb);
+    
+    Frame_AddKey(kKeySetting, ImageResource_main_icon_setting_92x92, cb_settings );
+    Frame_AddKey(kKeyKeyboard, ImageResource_main_icon_keyboard_92x92, cb_keyboard );
+    Frame_AddKey(kKeyWifiScan, ImageResource_main_icon_wifi_92x92, cb_wifi );
+    Frame_AddKey(kKeySDFile, ImageResource_main_icon_sdcard_92x92, key_sdfile_cb );
+    Frame_AddKey(kKeyHome, ImageResource_main_icon_home_92x92, cb_home );
 
     _time = 0;
     _next_update_time = 0;
@@ -134,10 +108,20 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
 
 Frame_Main::~Frame_Main(void)
 {
-    for(int i = 0; i < 8; i++)
+    for(int i = 0; i < kKeyCOUNT; i++)
     {
         delete _key[i];
     }
+}
+
+
+void Frame_Main::Frame_AddKey(uint16_t idx, const uint8_t *imagePtr, void (*func_cb)(epdgui_args_vector_t &) ) 
+{
+    _key[idx]->CanvasNormal()->pushImage(0, 0, KEY_W, KEY_H, imagePtr);
+    *(_key[idx]->CanvasPressed()) = *(_key[idx]->CanvasNormal());
+    _key[idx]->CanvasPressed()->ReverseColor();
+    _key[idx]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
+    _key[idx]->Bind(EPDGUI_Button::EVENT_RELEASED, func_cb);
 }
 
 void Frame_Main::AppName(m5epd_update_mode_t mode)
@@ -149,21 +133,18 @@ void Frame_Main::AppName(m5epd_update_mode_t mode)
     _names->setTextSize(20);
     _names->fillCanvas(0);
 
-    _names->drawString("WLAN", 20 + 46 + 3 * 136, 16);
- 
-    _names->drawString("Test", 20 + 46, 16);
-    _names->drawString("Setting", 20 + 46 + 136, 16);
-    _names->drawString("Keyboard", 20 + 46 + 2 * 136, 16);
 
-    _names->pushCanvas(0, 186, mode);
-    _names->fillCanvas(0);
+    for (int i=0; i< kKeyCOUNT; i++) {
+        int col = i % KEYS_PER_ROW;
+        int row = i / KEYS_PER_ROW;
+        _names->drawString(GetMainFrameKeyName(i), 20 + 46 + 136 * col, 16);    
+        if (col == KEYS_PER_ROW-1 || i==(kKeyCOUNT-1)) {
+            _names->pushCanvas(0, 186 + row * 151, mode);
+            _names->fillCanvas(0);
 
-    _names->drawString("Storage", 20 + 46, 16);
-    _names->drawString("Compare", 20 + 46 + 136, 16);
-    _names->drawString("Home", 20 + 46 + 2 * 136, 16);
-    _names->drawString("LifeGame", 20 + 46 + 3 * 136, 16);
+        }
+    }
 
-    _names->pushCanvas(0, 337, mode);
 }
 
 void Frame_Main::StatusBar(m5epd_update_mode_t mode)
@@ -225,7 +206,7 @@ int Frame_Main::init(epdgui_args_vector_t &args)
 {
     _is_run = 1;
     M5.EPD.WriteFullGram4bpp(GetWallpaper());
-    for(int i = 0; i < 8; i++)
+    for(int i = 0; i < kKeyCOUNT; i++)
     {
         EPDGUI_AddObject(_key[i]);
     }
