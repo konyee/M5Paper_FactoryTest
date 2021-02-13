@@ -15,11 +15,12 @@ public:
     static const uint32_t STYLE_ALIGN_LEFT = 0x00000004;
     static const uint32_t STYLE_ALIGN_RIGHT = 0x00000008;
     static const uint32_t STYLE_ALIGN_CENTER = 0x00000010;
-    static const uint32_t STYLE_INVISABLE = 0x00000020;
+    static const uint32_t STYLE_INVISIBLE = 0x00000020;
     static const uint32_t STYLE_DEFAULT = STYLE_SOLIDBORDER | STYLE_ALIGN_CENTER;
 
 public:
     EPDGUI_Button(int16_t x, int16_t y, int16_t w, int16_t h);
+    EPDGUI_Button(int16_t x, int16_t y, int16_t w, int16_t h, const uint8_t *image, String text, uint16_t textSize = 20);
     EPDGUI_Button(String label, int16_t x, int16_t y, int16_t w, int16_t h, uint32_t style = STYLE_DEFAULT);
     ~EPDGUI_Button();
     void Draw(m5epd_update_mode_t mode = UPDATE_MODE_DU4);
@@ -30,6 +31,7 @@ public:
     String getLabel(void) {return _label;}
     void AddArgs(int16_t event, uint16_t n, void* arg);
     void setBMPButton(String label_l, String label_r, const uint8_t *bmp32x32);
+    void setText(String name);
 
     M5EPD_Canvas* CanvasNormal();
     M5EPD_Canvas* CanvasPressed();
@@ -41,12 +43,12 @@ private:
     epdgui_args_vector_t _released_cb_args;
     int16_t _state = EVENT_NONE;
     String _label;
-    bool _is_invisable = false;
+    String _text;
+    bool _is_invisible = false;
 
 public:
     M5EPD_Canvas* _CanvasNormal = NULL;
     M5EPD_Canvas* _CanvasPressed = NULL;
 };
-
 
 #endif //__EPDGUI_BUTTON_H

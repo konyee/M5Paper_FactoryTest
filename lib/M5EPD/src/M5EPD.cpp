@@ -3,7 +3,7 @@
 #include "driver/adc.h"
 
 #define BAT_ADC_CHANNEL ADC1_GPIO35_CHANNEL
-#define BASE_VOLATAGE 3600
+#define BASE_VOLTAGE 3600
 #define SCALE 0.5//0.78571429
 #define ADC_FILTER_SAMPLE 8
 
@@ -89,7 +89,7 @@ void M5EPD::BatteryADCBegin()
     adc1_config_width(ADC_WIDTH_BIT_12);
     adc1_config_channel_atten(BAT_ADC_CHANNEL, ADC_ATTEN_DB_11);
     _adc_chars = (esp_adc_cal_characteristics_t *)calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, BASE_VOLATAGE, _adc_chars);
+    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, BASE_VOLTAGE, _adc_chars);
 }
 
 /** @brief Read raw data of ADC
@@ -130,6 +130,7 @@ void M5EPD::shutdown()
 {
     this->disableMainPower();
 }
+
 int M5EPD::shutdown(int seconds)
 {
     RTC.clearIRQ();
@@ -138,6 +139,7 @@ int M5EPD::shutdown(int seconds)
     this->disableMainPower();
     return 0;
 }
+
 int M5EPD::shutdown(const rtc_time_t &RTC_TimeStruct)
 {
     RTC.clearIRQ();

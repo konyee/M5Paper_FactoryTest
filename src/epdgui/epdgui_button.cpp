@@ -5,16 +5,44 @@ EPDGUI_Base(x, y, w, h)
 {
     this->_CanvasNormal = new M5EPD_Canvas(&M5.EPD);
     this->_CanvasPressed = new M5EPD_Canvas(&M5.EPD);
+    // this->_CanvasText = new M5EPD_Canvas(&M5.EPD);
     this->_CanvasNormal->createCanvas(_w, _h);
     this->_CanvasPressed->createCanvas(_w, _h);
+    // this->_CanvasText->createCanvas(_w, 16);
+    // this->_CanvasText->fillCanvas(0);
+}
+
+EPDGUI_Button::EPDGUI_Button(int16_t x, int16_t y, int16_t w, int16_t h, const uint8_t *image, String text, uint16_t textSize): 
+EPDGUI_Base(x, y, w, h)
+{
+    this->_CanvasNormal = new M5EPD_Canvas(&M5.EPD);
+    this->_CanvasPressed = new M5EPD_Canvas(&M5.EPD);
+
+    this->_CanvasNormal->createCanvas(_w, _h+32);
+    this->_CanvasPressed->createCanvas(_w, _h+32);
+
+    
+    this->_CanvasNormal->fillCanvas(0);
+    this->_CanvasNormal->pushImage(0, 0, _w, _h, image);
+
+    if (!this->_CanvasNormal->isRenderExist(textSize))
+        this->_CanvasNormal->createRender(textSize, 26);
+    
+    this->_CanvasNormal->setTextColor(15);
+    this->_CanvasNormal->setTextSize(textSize);
+    this->_CanvasNormal->setTextDatum(CC_DATUM);
+    this->_CanvasNormal->drawString(text, _w / 2, h + 13);
+
+    *(this->_CanvasPressed) = *(this->_CanvasNormal);
+    this->_CanvasPressed->ReverseColor();
 }
 
 EPDGUI_Button::EPDGUI_Button(String label, int16_t x, int16_t y, int16_t w, int16_t h, uint32_t style): 
 EPDGUI_Base(x, y, w, h)
 {
-    if(style & STYLE_INVISABLE)
+    if(style & STYLE_INVISIBLE)
     {
-        _is_invisable = true;
+        _is_invisible = true;
         return;
     }
     
@@ -81,7 +109,7 @@ M5EPD_Canvas* EPDGUI_Button::CanvasPressed()
 
 void EPDGUI_Button::Draw(m5epd_update_mode_t mode)
 {
-    if(_ishide || _is_invisable)
+    if(_ishide || _is_invisible)
     {
         return;
     }

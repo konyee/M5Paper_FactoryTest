@@ -3,18 +3,21 @@
 #include "frame_keyboard.h"
 #include "frame_wifiscan.h"
 #include "frame_home.h"
+#include "frame_main_settings.h"
+#include "WiFi.h"
 
-typedef struct { 
-    const char *name;
-    const uint8_t *image;
-    void (*callback)(epdgui_args_vector_t &);
-} Setting;
+void cb_settings(epdgui_args_vector_t &args);
+void cb_keyboard(epdgui_args_vector_t &args);
+void cb_wifi(epdgui_args_vector_t &args);
+void cb_home(epdgui_args_vector_t &args);
 
-
-
-#define KEYS_PER_ROW 4
-#define KEY_W 92
-#define KEY_H 92
+Setting settings[] = {
+    { .text = "Settings", .image = ImageResource_main_icon_setting_92x92,   .callback = cb_settings },
+    { .text = "Keyboard", .image = ImageResource_main_icon_keyboard_92x92,  .callback = cb_keyboard },
+    { .text = "WiFi",     .image = ImageResource_main_icon_wifi_92x92,      .callback = cb_wifi  },
+    { .text = "Home",     .image = ImageResource_main_icon_home_92x92,      .callback = cb_home },
+    // { .id = kKeySDFile,     .name = "SD",       .image = ImageResource_main_icon_sdcard_92x92, .callback = cb_sdfile },
+};
 
 // void cb_sdfile(epdgui_args_vector_t &args)
 // {
@@ -67,19 +70,9 @@ void cb_home(epdgui_args_vector_t &args) {
     *((int*)(args[0])) = 0;  
 }
 
-Setting settings[] = {
-    { .name = "Settings", .image = ImageResource_main_icon_setting_92x92,   .callback = cb_settings },
-    { .name = "Keyboard", .image = ImageResource_main_icon_keyboard_92x92,  .callback = cb_keyboard },
-    { .name = "WiFi",     .image = ImageResource_main_icon_wifi_92x92,      .callback = cb_wifi  },
-    { .name = "Home",     .image = ImageResource_main_icon_home_92x92,      .callback = cb_home },
-    // { .id = kKeySDFile,     .name = "SD",       .image = ImageResource_main_icon_sdcard_92x92, .callback = cb_sdfile },
-};
-
 int getSettingCount() {
     return sizeof(settings)/sizeof(Setting);
 }
-
-
 
 Frame_Main::Frame_Main(void): Frame_Base(false)
 {
@@ -90,25 +83,13 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _bar->createCanvas(540, 44);
     _bar->setTextSize(26);
 
-    // _names = new M5EPD_Canvas(&M5.EPD);
-    // _names->createCanvas(KEY_W, 32);
-    // _names->setTextDatum(CC_DATUM);
-    // if(!_names->isRenderExist(20))
-    //     _names->createRender(20, 26);
-    // _names->setTextSize(20);
-        
     for(int i = 0; i < getSettingCount(); i++) {
-        int y=i / KEYS_PER_ROW;
         int x=i % KEYS_PER_ROW;
+        int y=i / KEYS_PER_ROW;
 
-        EPDGUI_Button *btn = new EPDGUI_Button(20 + x * 136, 90+ y * 150, KEY_W, KEY_H);
-        
-        btn->CanvasNormal()->pushImage(0, 0, KEY_W, KEY_H, settings[i].image);
-        *(btn->CanvasPressed()) = *(btn->CanvasNormal());
-        btn->CanvasPressed()->ReverseColor();
+        EPDGUI_Button *btn = new EPDGUI_Button(MARGIN_LEFT + x * KEY_OFFSET_X, MARGIN_TOP+ y * KEY_OFFSET_Y, KEY_W, KEY_H, settings[i].image, settings[i].text, 20);
         btn->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
         btn->Bind(EPDGUI_Button::EVENT_RELEASED, settings[i].callback);
-        btn->setLabel(settings[i].name);
         _key.push_back(btn);
     }
     
@@ -123,25 +104,6 @@ Frame_Main::~Frame_Main(void)
     }
 }
 
-// void Frame_Main::AppName(m5epd_update_mode_t mode)
-// {
-//     if(!_names->isRenderExist(20))
-//     {
-//         _names->createRender(20, 26);
-//     }
-//     _names->setTextSize(20);
-//     _names->fillCanvas(0);
-//     for (int i=0; i< kKeyCOUNT; i++) {
-//         int col = i % KEYS_PER_ROW;
-//         int row = i / KEYS_PER_ROW;
-//         _names->drawString(settings[i].name, 20 + 46 + 136 * col, 16);    
-//         if (col == KEYS_PER_ROW-1 || i==(kKeyCOUNT-1)) {
-//             _names->pushCanvas(0, 186 + row * 151, mode);
-//             _names->fillCanvas(0);
-//         }
-//     }
-// }
-
 void Frame_Main::StatusBar(m5epd_update_mode_t mode)
 {
     if((millis() - _time) < _next_update_time)
@@ -152,7 +114,12 @@ void Frame_Main::StatusBar(m5epd_update_mode_t mode)
     _bar->fillCanvas(0);
     _bar->drawFastHLine(0, 43, 540, 15);
     _bar->setTextDatum(CL_DATUM);
-    _bar->drawString("M5Paper", 10, 27);
+
+    // String ssid = WiFi.SSID(0);
+    // int32_t rssi = WiFi.RSSI(0);
+    
+    // _bar->drawString(ssid+" "+String(rssi), 10, 27);
+    _bar->drawString(GetWifiSSID(), 10, 27);
 
     // Battery
     _bar->setTextDatum(CR_DATUM);
@@ -208,7 +175,6 @@ int Frame_Main::init(epdgui_args_vector_t &args)
     _time = 0;
     _next_update_time = 0;
     StatusBar(UPDATE_MODE_NONE);
-    // AppName(UPDATE_MODE_NONE);
     return 9;
 }
 

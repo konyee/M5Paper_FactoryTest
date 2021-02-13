@@ -129,8 +129,6 @@ void SysInit_Start(void)
 
     SysInit_UpdateInfo("$OK");
 
-    Serial.println("OK");
-
     delay(500);
 }
 

@@ -6030,7 +6030,7 @@ esp_err_t TFT_eSPI::unloadFont()
 
 esp_err_t TFT_eSPI::createRender(uint16_t size, uint16_t cache_size)
 {
-
+  log_d("createRender: %d", size);
   if(_render_map.count(size) != 0)
   {
     log_e("Size %d already exists.", size);

@@ -18,8 +18,6 @@ esp_err_t __espret__;
 
 const uint8_t *wallpapers[] = {
     ImageResource_wallpaper_m5stack_540x960,
-    // ImageResource_wallpaper_engine_540x960,
-    // ImageResource_wallpaper_penrose_triangle_540x960
 };
 
 const uint8_t *kIMGLoading[16] = {
@@ -47,18 +45,11 @@ const char *wallpapers_name_en[] = {
     // "Penrose Triangle"
 };
 
-const char *frame_names[] = {
-    "Setting",
-    "Keyboard",
-    "WLAN",
-    "SD",
-    "Home",
-};
 
 uint16_t global_wallpaper = DEFAULT_WALLPAPER;
-String global_wifi_ssid;
-String global_wifi_password;
-uint8_t global_wifi_configed = false;
+String global_wifi_ssid = "konyi";
+String global_wifi_password = "Q5N43x6T";
+uint8_t global_wifi_configed = true;
 uint16_t global_reader_textsize = 32;
 uint8_t global_time_synced = false;
 uint8_t global_ttf_file_loaded = false;
@@ -129,11 +120,6 @@ const uint8_t *GetWallpaper(void)
 const char *GetWallpaperName(uint16_t wallpaper_id)
 {
     return wallpapers_name_en[wallpaper_id];
-}
-
-const char *GetMainFrameKeyName(uint16_t frameId)
-{
-    return frame_names[frameId];
 }
 
 esp_err_t LoadSetting(void)

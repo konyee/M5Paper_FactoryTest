@@ -3,16 +3,6 @@
 
 #include "frame_base.h"
 
-
-// enum
-// {
-//     kKeySetting = 0,
-//     kKeyKeyboard,
-//     kKeyWifiScan,
-//     kKeyHome,
-//     // kKeySDFile,
-//     kKeyCOUNT,
-// };
 class Frame_Main : public Frame_Base
 {
 public:
@@ -21,12 +11,10 @@ public:
     int run();
     int init(epdgui_args_vector_t &args);
     void StatusBar(m5epd_update_mode_t mode);
-    void AppName(m5epd_update_mode_t mode);
 
 private:
     std::vector<EPDGUI_Button*> _key;
     M5EPD_Canvas *_bar;
-    M5EPD_Canvas *_names;
     uint32_t _next_update_time;
     uint32_t _time;
 };
