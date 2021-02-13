@@ -2,8 +2,7 @@
 #include "frame_wifipassword.h"
 #include <WiFi.h>
 
-#define MAX_BTN_NUM     14
-#define MAX_WIFI_NUM    (MAX_BTN_NUM - 1)
+
 bool _update_flag = false;
 EPDGUI_Button *_connect_key = NULL;
 

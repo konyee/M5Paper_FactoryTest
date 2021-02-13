@@ -4,6 +4,9 @@
 #include "frame_base.h"
 #include "../epdgui/epdgui.h"
 
+#define MAX_BTN_NUM     14
+#define MAX_WIFI_NUM    (MAX_BTN_NUM - 1)
+
 class Frame_WifiScan : public Frame_Base
 {
 public:
@@ -17,7 +20,7 @@ public:
     void SetConnected(String ssid, int rssi);
 
 private:
-    EPDGUI_Button *_key_wifi[14];
+    EPDGUI_Button *_key_wifi[MAX_WIFI_NUM];
     uint8_t _language;
     uint32_t _scan_count = 0;
     bool _connect;
