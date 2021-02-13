@@ -12,10 +12,10 @@ void cb_wifi(epdgui_args_vector_t &args);
 void cb_home(epdgui_args_vector_t &args);
 
 Setting settings[] = {
+    { .text = "Home",     .image = ImageResource_main_icon_home_92x92,      .callback = cb_home },
     { .text = "Settings", .image = ImageResource_main_icon_setting_92x92,   .callback = cb_settings },
     { .text = "Keyboard", .image = ImageResource_main_icon_keyboard_92x92,  .callback = cb_keyboard },
     { .text = "WiFi",     .image = ImageResource_main_icon_wifi_92x92,      .callback = cb_wifi  },
-    { .text = "Home",     .image = ImageResource_main_icon_home_92x92,      .callback = cb_home },
     // { .id = kKeySDFile,     .name = "SD",       .image = ImageResource_main_icon_sdcard_92x92, .callback = cb_sdfile },
 };
 
@@ -130,11 +130,11 @@ void Frame_Main::StatusBar(m5epd_update_mode_t mode)
     {
         vol = 3300;
     }
-    else if(vol > 4350)
+    else if(vol > 4100)
     {
-        vol = 4350;
+        vol = 4100;
     }
-    float battery = (float)(vol - 3300) / (float)(4350 - 3300);
+    float battery = (float)(vol - 3300) / (float)(4100 - 3300);
     if(battery <= 0.01)
     {
         battery = 0.01;
@@ -145,6 +145,7 @@ void Frame_Main::StatusBar(m5epd_update_mode_t mode)
     }
     uint8_t px = battery * 25;
     sprintf(buf, "%d%%", (int)(battery * 100));
+    // sprintf(buf, "%d mV", (vol));
     _bar->drawString(buf, 498 - 10, 27);
     _bar->fillRect(498 + 3, 8 + 10, px, 13, 15);
     // _bar->pushImage(498, 8, 32, 32, 2, ImageResource_status_bar_battery_charging_32x32);
@@ -167,7 +168,8 @@ void Frame_Main::StatusBar(m5epd_update_mode_t mode)
 int Frame_Main::init(epdgui_args_vector_t &args)
 {
     _is_run = 1;
-    M5.EPD.WriteFullGram4bpp(GetWallpaper());
+    M5.EPD.Clear(false);
+    // M5.EPD.WriteFullGram4bpp(GetWallpaper());
     for(int i = 0; i < _key.size(); i++)
     {
         EPDGUI_AddObject(_key[i]);
