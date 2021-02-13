@@ -4,22 +4,13 @@
 #include <M5EPD.h>
 #include <nvs.h>
 
-
 #define WALLPAPER_NUM 3
 
-enum
-{
-    LANGUAGE_EN = 0,    // default, English
-    LANGUAGE_JA, // Japanese
-    LANGUAGE_ZH // Simplified Chinese
-};
-
-void SetLanguage(uint8_t language);
-uint8_t GetLanguage(void);
 void SetWallpaper(uint16_t wallpaper_id);
 uint16_t GetWallpaperID(void);
 const uint8_t* GetWallpaper(void);
 const char* GetWallpaperName(uint16_t wallpaper_id);
+const char *GetMainFrameKeyName(uint16_t frameId);
 
 esp_err_t LoadSetting(void);
 esp_err_t SaveSetting(void);

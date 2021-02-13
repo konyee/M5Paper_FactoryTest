@@ -48,15 +48,11 @@ void key_textsize_reset_cb(epdgui_args_vector_t &args)
 Frame_Keyboard::Frame_Keyboard(bool isHorizontal) : Frame_Base()
 {
     _frame_name = "Frame_Keyboard";
-    uint8_t language = GetLanguage();
+
     if(isHorizontal)
     {
         inputbox = new EPDGUI_Textbox(84, 25, 712, 250);
-        if(language == LANGUAGE_JA)
-            key_textclear = new EPDGUI_Button("削除", 804, 25, 72, 120);
-        else if(language == LANGUAGE_ZH)
-            key_textclear = new EPDGUI_Button("清屏", 804, 25, 72, 120);
-        else
+
             key_textclear = new EPDGUI_Button("CLR", 804, 25, 72, 120);
 
         key_textsize_plus = new EPDGUI_Button("+", 804, 157, 72, 40);
@@ -67,11 +63,7 @@ Frame_Keyboard::Frame_Keyboard(bool isHorizontal) : Frame_Base()
     {
         const uint16_t kKeyBaseY = 628;
         inputbox = new EPDGUI_Textbox(4, 100, 532, 512);
-        if(language == LANGUAGE_JA)
-            key_textclear = new EPDGUI_Button("削除", 4, kKeyBaseY, 260, 52);
-        else if(language == LANGUAGE_ZH)
-            key_textclear = new EPDGUI_Button("清屏", 4, kKeyBaseY, 260, 52);
-        else
+  
             key_textclear = new EPDGUI_Button("CLR", 4, kKeyBaseY, 260, 52);
 
         key_textsize_plus = new EPDGUI_Button("+", 448, kKeyBaseY, 88, 52);
@@ -95,17 +87,7 @@ Frame_Keyboard::Frame_Keyboard(bool isHorizontal) : Frame_Base()
     key_textsize_minus->AddArgs(EPDGUI_Button::EVENT_RELEASED, 1, (void*)key_textsize_reset);
     key_textsize_minus->Bind(EPDGUI_Button::EVENT_RELEASED, key_textsize_minus_cb);
 
-    if(language == LANGUAGE_JA)
-    {
-        exitbtn("ホーム");
-        _canvas_title->drawString("鍵盤", 270, 34);
-    }
-    else if(language == LANGUAGE_ZH)
-    {
-        exitbtn("主页");
-        _canvas_title->drawString("键盘", 270, 34);
-    }
-    else
+
     {
         exitbtn("Home");
         _canvas_title->drawString("Keyboard", 270, 34);

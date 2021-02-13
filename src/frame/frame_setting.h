@@ -14,7 +14,7 @@ public:
 
 private:
     EPDGUI_Button *_key_wallpaper;
-    EPDGUI_Button *_key_language;
+    // EPDGUI_Button *_key_language;
     EPDGUI_Button *_key_shutdown;
     EPDGUI_Button *_key_restart;
     EPDGUI_Button *_key_syncntp;
