@@ -20,7 +20,7 @@ public:
     void SetConnected(String ssid, int rssi);
 
 private:
-    EPDGUI_Button *_key_wifi[MAX_WIFI_NUM];
+    EPDGUI_Button *_key_wifi[MAX_BTN_NUM];
     uint8_t _language;
     uint32_t _scan_count = 0;
     bool _connect;
