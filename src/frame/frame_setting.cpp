@@ -1,6 +1,6 @@
 #include "frame_setting.h"
 // #include "frame_setting_language.h"
-#include "frame_setting_wallpaper.h"
+// #include "frame_setting_wallpaper.h"
 #include "WiFi.h"
 
 #define KEY_W 92
@@ -41,17 +41,17 @@ void key_restart_cb(epdgui_args_vector_t &args)
 //     *((int*)(args[0])) = 0;
 // }
 
-void key_wallpaper_cb(epdgui_args_vector_t &args)
-{
-    Frame_Base *frame = EPDGUI_GetFrame("Frame_Setting_Wallpaper");
-    if(frame == NULL)
-    {
-        frame = new Frame_Setting_Wallpaper();
-        EPDGUI_AddFrame("Frame_Setting_Wallpaper", frame);
-    }
-    EPDGUI_PushFrame(frame);
-    *((int*)(args[0])) = 0;
-}
+// void key_wallpaper_cb(epdgui_args_vector_t &args)
+// {
+//     Frame_Base *frame = EPDGUI_GetFrame("Frame_Setting_Wallpaper");
+//     if(frame == NULL)
+//     {
+//         frame = new Frame_Setting_Wallpaper();
+//         EPDGUI_AddFrame("Frame_Setting_Wallpaper", frame);
+//     }
+//     EPDGUI_PushFrame(frame);
+//     *((int*)(args[0])) = 0;
+// }
 
 void key_synctime_cb(epdgui_args_vector_t &args)
 {
@@ -85,18 +85,12 @@ void key_synctime_cb(epdgui_args_vector_t &args)
 
     if(ret == 0)
     {
-
-        {
-            info.drawString("Time sync failed", 150, 55);
-        }
+        info.drawString("Time sync failed", 150, 55);
         info.pushCanvas(120, 430, UPDATE_MODE_GL16);
     }
     else
     {
-
-        {
-            info.drawString("Success", 150, 55);
-        }
+        info.drawString("Success", 150, 55);
         info.pushCanvas(120, 430, UPDATE_MODE_GL16);
     }
     M5.EPD.WriteFullGram4bpp(GetWallpaper());
@@ -191,16 +185,14 @@ Frame_Setting::Frame_Setting(void)
     key_timezone_minus->Bind(EPDGUI_Button::EVENT_RELEASED, key_timezone_minus_cb);
 
   
-    {
-        _key_wallpaper->setBMPButton("  Wallpaper", "\u25B6", ImageResource_item_icon_wallpaper_32x32);
-        // _key_language->setBMPButton("  Language", "\u25B6", ImageResource_item_icon_language_32x32);
-        _key_syncntp->setBMPButton("  Sync Time", "", ImageResource_item_icon_ntptime_32x32);
-        _key_restart->setBMPButton("  Restart", "", ImageResource_item_icon_restart_32x32);
-        _key_shutdown->setBMPButton("  Shutdown", "", ImageResource_item_icon_shutdown_32x32);
-        _timezone_canvas->drawString("Time zone (UTC)", 15, 35);
-        exitbtn("Home");
-        _canvas_title->drawString("Setting", 270, 34);
-    }
+    // _key_wallpaper->setBMPButton("  Wallpaper", "\u25B6", ImageResource_item_icon_wallpaper_32x32);
+    // _key_language->setBMPButton("  Language", "\u25B6", ImageResource_item_icon_language_32x32);
+    _key_syncntp->setBMPButton("  Sync Time", "", ImageResource_item_icon_ntptime_32x32);
+    _key_restart->setBMPButton("  Restart", "", ImageResource_item_icon_restart_32x32);
+    _key_shutdown->setBMPButton("  Shutdown", "", ImageResource_item_icon_shutdown_32x32);
+    _timezone_canvas->drawString("Time zone (UTC)", 15, 35);
+    exitbtn("Home");
+    _canvas_title->drawString("Setting", 270, 34);
 
     _key_exit->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _key_exit->Bind(EPDGUI_Button::EVENT_RELEASED, &Frame_Base::exit_cb);
@@ -208,8 +200,8 @@ Frame_Setting::Frame_Setting(void)
     // _key_language->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     // _key_language->Bind(EPDGUI_Button::EVENT_RELEASED, &key_language_cb);
 
-    _key_wallpaper->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
-    _key_wallpaper->Bind(EPDGUI_Button::EVENT_RELEASED, &key_wallpaper_cb);
+    // _key_wallpaper->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
+    // _key_wallpaper->Bind(EPDGUI_Button::EVENT_RELEASED, &key_wallpaper_cb);
 
     _key_shutdown->Bind(EPDGUI_Button::EVENT_RELEASED, &key_shutdown_cb);
     _key_restart->Bind(EPDGUI_Button::EVENT_RELEASED, &key_restart_cb);
@@ -235,7 +227,7 @@ int Frame_Setting::init(epdgui_args_vector_t &args)
     M5.EPD.WriteFullGram4bpp(GetWallpaper());
     _canvas_title->pushCanvas(0, 8, UPDATE_MODE_NONE);
     _timezone_canvas->pushCanvas(0, kTimeZoneY, UPDATE_MODE_NONE);
-    EPDGUI_AddObject(_key_wallpaper);
+    // EPDGUI_AddObject(_key_wallpaper);
     // EPDGUI_AddObject(_key_language);
     EPDGUI_AddObject(_key_shutdown);
     EPDGUI_AddObject(_key_restart);

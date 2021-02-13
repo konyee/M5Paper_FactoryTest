@@ -3,7 +3,7 @@
 #include "esp32-hal-log.h"
 #include <WiFi.h>
 
-#define DEFAULT_WALLPAPER 2
+#define DEFAULT_WALLPAPER 0
 SemaphoreHandle_t _xSemaphore_LoadingAnime = NULL;
 static uint8_t _loading_anime_eixt_flag = false;
 esp_err_t __espret__;
@@ -18,8 +18,8 @@ esp_err_t __espret__;
 
 const uint8_t *wallpapers[] = {
     ImageResource_wallpaper_m5stack_540x960,
-    ImageResource_wallpaper_engine_540x960,
-    ImageResource_wallpaper_penrose_triangle_540x960
+    // ImageResource_wallpaper_engine_540x960,
+    // ImageResource_wallpaper_penrose_triangle_540x960
 };
 
 const uint8_t *kIMGLoading[16] = {
@@ -43,8 +43,8 @@ const uint8_t *kIMGLoading[16] = {
 
 const char *wallpapers_name_en[] = {
     "M5Paper",
-    "Engine",
-    "Penrose Triangle"
+    // "Engine",
+    // "Penrose Triangle"
 };
 
 const char *frame_names[] = {
