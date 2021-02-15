@@ -14,7 +14,9 @@ public:
     ~Frame_Home();
     int init(epdgui_args_vector_t &args);
     void InitSwitch(EPDGUI_Switch* sw, String title, String subtitle, const uint8_t *img1, const uint8_t *img2);
+    void addSwitch(String uid, uint8_t col, uint8_t row, String caption, String subcaption, const uint8_t* img1, const uint8_t* img2);
 private:
+    std::vector<EPDGUI_Switch*> buttons;
     // std::vector<EPDGUI_Switch*> lights;
     // std::vector<EPDGUI_Switch*> sockets;
     // std::vector<EPDGUI_Switch*> climates;

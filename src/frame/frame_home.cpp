@@ -6,15 +6,37 @@
 TimerHandle_t mqttReconnectTimer;
 AsyncMqttClient mqttClient;
 
+std::string getToken(std::string s, std::string delimiter, int idx) 
+{
+    size_t pos = 0;
+    size_t cnt=0;
+    std::string token;
+    while ((pos = s.find(delimiter)) != std::string::npos) {
+        token = s.substr(0, pos);
+        if (cnt == idx) {
+            return token;
+        }
+        // std::cout << token << std::endl;
+        s.erase(0, pos + delimiter.length());
+        cnt++;
+    }
+    // std::cout << s << std::endl;
+    return s;
+}
+
 void connectToMqtt() {
   Serial.println("Connecting to MQTT...");
   mqttClient.connect();
 }
 
+
 void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
   // Serial.println("Publish received.");
 //   Serial.print("  topic: ");
   Serial.println(topic);
+  const char* x = getToken(topic,"/",2).c_str();
+  Serial.println(x);
+  
 //   Serial.print("  qos: ");
 //   Serial.println(properties.qos);
 //   Serial.print("  dup: ");
@@ -287,6 +309,7 @@ Frame_Home::Frame_Home(void)
     _key_exit->Bind(EPDGUI_Button::EVENT_RELEASED, &Frame_Base::exit_cb);
 }
 
+
 Frame_Home::~Frame_Home(void)
 {
     delete _sw_light1;
@@ -307,8 +330,6 @@ Frame_Home::~Frame_Home(void)
 
 int Frame_Home::init(epdgui_args_vector_t &args)
 {
-    // this->mqtt = new MqttClient(WiFi&);
-    // this->mqtt->setup();
     _is_run = 1;
     M5.EPD.Clear();
     _canvas_title->pushCanvas(0, 8, UPDATE_MODE_NONE);
@@ -326,6 +347,11 @@ int Frame_Home::init(epdgui_args_vector_t &args)
     EPDGUI_AddObject(_key_air_2_plus);
     EPDGUI_AddObject(_key_air_2_minus);
 #endif
+    for(int i = 0; i < buttons.size(); i++)
+    {
+        EPDGUI_AddObject(buttons[i]);
+    }
+
     EPDGUI_AddObject(_key_exit);
 
     if (WiFi.status() == WL_CONNECTED) {
@@ -344,3 +370,19 @@ int Frame_Home::init(epdgui_args_vector_t &args)
 
     return 3;
 }
+
+void Frame_Home::addSwitch(String uid, uint8_t col, uint8_t row, String caption, String subcaption, const uint8_t* img1, const uint8_t* img2) {
+
+    EPDGUI_Switch* btn = new EPDGUI_Switch(2, col?288:20, 44 + 72 + row*280, 228, 228);
+    InitSwitch(btn, caption, subcaption, img1, img2);    
+    btn->SetUID(uid);
+    // EPDGUI_AddObject(btn);
+    // _sw_light1       = new EPDGUI_Switch(2, 20, 44 + 72, 228, 228);
+    // _sw_socket1      = new EPDGUI_Switch(2, 20, 324 + 72, 228, 228);
+    // _sw_socket2      = new EPDGUI_Switch(2, 288, 324 + 72, 228, 228);
+    // _sw_light1->SetUID("light1");
+    // InitSwitch(_sw_light1, "Ceiling Light", "Living Room", ImageResource_home_icon_light_off_92x92, ImageResource_home_icon_light_on_92x92);
+    // InitSwitch(_sw_light2, "Table Lamp", "Bedroom", ImageResource_home_icon_light_off_92x92, ImageResource_home_icon_light_on_92x92);
+
+}
+
