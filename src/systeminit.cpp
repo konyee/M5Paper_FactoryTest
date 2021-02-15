@@ -21,10 +21,12 @@ void WaitForUser(void)
         }
     }
 }
-
+  
 void SysInit_Start(void)
 {
+#ifdef SDCARD    
     bool ret = false;
+#endif    
     Serial.begin(115200);
     Serial.flush();
     delay(50);
@@ -50,8 +52,11 @@ void SysInit_Start(void)
 
     disableCore0WDT();
     xTaskCreatePinnedToCore(SysInit_Loading, "SysInit_Loading", 4096, NULL, 1, NULL, 0);
+#ifdef SDCARD    
     SysInit_UpdateInfo("Initializing SD card...");
+#endif    
     SPI.begin(14, 13, 12, 4);
+#ifdef SDCARD        
     ret = SD.begin(4, SPI, 20000000);
     if (ret == false)
     {
@@ -61,7 +66,7 @@ void SysInit_Start(void)
         SysInit_UpdateInfo("[ERROR] Failed to initialize SD card.");
         // WaitForUser();
     }
-
+#endif
     SysInit_UpdateInfo("Initializing Touch pad...");
     if (M5.TP.begin(21, 22, 36) != ESP_OK)
     {
@@ -75,12 +80,14 @@ void SysInit_Start(void)
     LoadSetting();
 
     M5EPD_Canvas _initcanvas(&M5.EPD);
+#ifdef SDCARD        
     if (SD.exists("/font.ttf"))
     {
         _initcanvas.loadFont("/font.ttf", SD);
         SetTTFLoaded(true);
     }
     else
+#endif    
     {
         _initcanvas.loadFont(binaryttf, sizeof(binaryttf));
         SetTTFLoaded(false);

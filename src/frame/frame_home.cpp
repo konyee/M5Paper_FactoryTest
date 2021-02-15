@@ -1,4 +1,81 @@
 #include "frame_home.h"
+#include "WiFi.h"
+
+#include <AsyncMqttClient.h>
+
+TimerHandle_t mqttReconnectTimer;
+AsyncMqttClient mqttClient;
+
+void connectToMqtt() {
+  Serial.println("Connecting to MQTT...");
+  mqttClient.connect();
+}
+
+void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
+  // Serial.println("Publish received.");
+//   Serial.print("  topic: ");
+  Serial.println(topic);
+//   Serial.print("  qos: ");
+//   Serial.println(properties.qos);
+//   Serial.print("  dup: ");
+//   Serial.println(properties.dup);
+//   Serial.print("  retain: ");
+//   Serial.println(properties.retain);
+//   Serial.print("  len: ");
+//   Serial.println(len);
+//   Serial.print("  index: ");
+//   Serial.println(index);
+//   Serial.print("  total: ");
+//   Serial.println(total);
+}
+
+void onMqttConnect(bool sessionPresent) {
+  Serial.println("Connected to MQTT.");
+  Serial.print("Session present: ");
+  Serial.println(sessionPresent);
+  uint16_t packetIdSub = mqttClient.subscribe("homeassistant/light/+/+/config", 0);
+  Serial.print("Subscribing at QoS 2, packetId: ");
+  Serial.println(packetIdSub);
+//   mqttClient.publish("test/lol", 0, true, "test 1");
+//   Serial.println("Publishing at QoS 0");
+  const char* config ="";
+
+  uint16_t packetIdPub1 = mqttClient.publish("homeassistant/switch/m5paper/config", 2, true, config);
+  Serial.print("Publishing at QoS 1, packetId: ");
+  Serial.println(packetIdPub1);
+//   uint16_t packetIdPub2 = mqttClient.publish("test/lol", 2, true, "test 3");
+//   Serial.print("Publishing at QoS 2, packetId: ");
+//   Serial.println(packetIdPub2);
+}
+
+void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
+  Serial.println("Disconnected from MQTT.");
+
+  if (WiFi.isConnected()) {
+    xTimerStart(mqttReconnectTimer, 0);
+  }
+}
+
+void onMqttSubscribe(uint16_t packetId, uint8_t qos) {
+  Serial.println("Subscribe acknowledged.");
+  Serial.print("  packetId: ");
+  Serial.println(packetId);
+  Serial.print("  qos: ");
+  Serial.println(qos);
+}
+
+void onMqttUnsubscribe(uint16_t packetId) {
+  Serial.println("Unsubscribe acknowledged.");
+  Serial.print("  packetId: ");
+  Serial.println(packetId);
+}
+
+void onMqttPublish(uint16_t packetId) {
+  Serial.println("Publish acknowledged.");
+  Serial.print("  packetId: ");
+  Serial.println(packetId);
+}
+
 
 void Frame_Home::InitSwitch(EPDGUI_Switch* sw, String title, String subtitle, const uint8_t *img1, const uint8_t *img2)
 {
@@ -13,6 +90,8 @@ void Frame_Home::InitSwitch(EPDGUI_Switch* sw, String title, String subtitle, co
     sw->Canvas(1)->pushImage(68, 20, 92, 92, img2);
 }
 
+#ifdef SHOW_AIR
+
 void key_home_air_adjust_cb(epdgui_args_vector_t &args)
 {
     int operation = ((EPDGUI_Button*)(args[0]))->GetCustomString().toInt();
@@ -26,7 +105,6 @@ void key_home_air_adjust_cb(epdgui_args_vector_t &args)
     if(operation == 1)
     {
         temp++;
-        
     }
     else
     {
@@ -57,60 +135,89 @@ void key_home_air_state1_cb(epdgui_args_vector_t &args)
     b1->SetEnable(true);
     b2->SetEnable(true);
 }
+#endif
+
+void sw_light_cb(epdgui_args_vector_t &args) 
+{
+    EPDGUI_Switch *sw = ((EPDGUI_Switch*)(args[0]));
+    String topic = "m5paper/" + sw->GetUID() + "/set";
+    char payload[10];
+    if (sw->getState() == 1)
+        sprintf(payload, "ON");
+    else
+        sprintf(payload, "OFF");
+    
+    mqttClient.publish(topic.c_str(), 0, false, (const char*)payload );
+}
+
 
 Frame_Home::Frame_Home(void)
 {
     _frame_name = "Frame_Home";
 
+    
     _sw_light1       = new EPDGUI_Switch(2, 20, 44 + 72, 228, 228);
+    _sw_light1->SetUID("light1");
     _sw_light2       = new EPDGUI_Switch(2, 288, 44 + 72, 228, 228);
+    _sw_light2->SetUID("light2");
+
+#ifdef SHOW_SOCKET    
     _sw_socket1      = new EPDGUI_Switch(2, 20, 324 + 72, 228, 228);
     _sw_socket2      = new EPDGUI_Switch(2, 288, 324 + 72, 228, 228);
+#endif
+
+#ifdef SHOW_AIR
     _sw_air_1        = new EPDGUI_Switch(2, 20, 604 + 72, 228, 184);
-    _sw_air_2        = new EPDGUI_Switch(2, 288, 604 + 72, 228, 184);
     _key_air_1_plus  = new EPDGUI_Button(20 + 116, 604 + 72 + 184, 112, 44);
     _key_air_1_minus = new EPDGUI_Button(20, 604 + 72 + 184, 116, 44);
-    _key_air_2_plus  = new EPDGUI_Button(288 + 116, 604 + 72 + 184, 112, 44);
-    _key_air_2_minus = new EPDGUI_Button(288, 604 + 72 + 184, 116, 44);
-
     _key_air_1_plus ->SetCustomString("1");
     _key_air_1_minus->SetCustomString("0");
-    _key_air_2_plus ->SetCustomString("1");
-    _key_air_2_minus->SetCustomString("0");
     _key_air_1_plus->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, _key_air_1_plus);
     _key_air_1_plus->AddArgs(EPDGUI_Button::EVENT_RELEASED, 1, _sw_air_1);
     _key_air_1_plus->Bind(EPDGUI_Button::EVENT_RELEASED, key_home_air_adjust_cb);
     _key_air_1_minus->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, _key_air_1_minus);
     _key_air_1_minus->AddArgs(EPDGUI_Button::EVENT_RELEASED, 1, _sw_air_1);
     _key_air_1_minus->Bind(EPDGUI_Button::EVENT_RELEASED, key_home_air_adjust_cb);
+
+    _sw_air_2        = new EPDGUI_Switch(2, 288, 604 + 72, 228, 184);
+    _key_air_2_plus  = new EPDGUI_Button(288 + 116, 604 + 72 + 184, 112, 44);
+    _key_air_2_minus = new EPDGUI_Button(288, 604 + 72 + 184, 116, 44);
+    _key_air_2_plus ->SetCustomString("1");
+    _key_air_2_minus->SetCustomString("0");
     _key_air_2_plus->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, _key_air_2_plus);
     _key_air_2_plus->AddArgs(EPDGUI_Button::EVENT_RELEASED, 1, _sw_air_2);
     _key_air_2_plus->Bind(EPDGUI_Button::EVENT_RELEASED, key_home_air_adjust_cb);
     _key_air_2_minus->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, _key_air_2_minus);
     _key_air_2_minus->AddArgs(EPDGUI_Button::EVENT_RELEASED, 1, _sw_air_2);
     _key_air_2_minus->Bind(EPDGUI_Button::EVENT_RELEASED, key_home_air_adjust_cb);
-
+#endif
     M5EPD_Canvas canvas_temp(&M5.EPD);
     canvas_temp.createRender(36);
 
 
 
-    {
-        InitSwitch(_sw_light1, "Ceiling Light", "Living Room", ImageResource_home_icon_light_off_92x92, ImageResource_home_icon_light_on_92x92);
-        InitSwitch(_sw_light2, "Table Lamp", "Bedroom", ImageResource_home_icon_light_off_92x92, ImageResource_home_icon_light_on_92x92);
-        InitSwitch(_sw_socket1, "Rice Cooker", "Kitchen", ImageResource_home_icon_socket_off_92x92, ImageResource_home_icon_socket_on_92x92);
-        InitSwitch(_sw_socket2, "Computer", "Bedroom", ImageResource_home_icon_socket_off_92x92, ImageResource_home_icon_socket_on_92x92);
-    }
+    InitSwitch(_sw_light1, "Ceiling Light", "Living Room", ImageResource_home_icon_light_off_92x92, ImageResource_home_icon_light_on_92x92);
+    InitSwitch(_sw_light2, "Table Lamp", "Bedroom", ImageResource_home_icon_light_off_92x92, ImageResource_home_icon_light_on_92x92);
+#ifdef SHOW_SOCKET    
+    InitSwitch(_sw_socket1, "Rice Cooker", "Kitchen", ImageResource_home_icon_socket_off_92x92, ImageResource_home_icon_socket_on_92x92);
+    InitSwitch(_sw_socket2, "Computer", "Bedroom", ImageResource_home_icon_socket_off_92x92, ImageResource_home_icon_socket_on_92x92);
+#endif    
+  
+    _sw_light1->AddArgs(0, 0, _sw_light1);
+    _sw_light1->Bind(0, sw_light_cb);
 
-    
+    _sw_light1->AddArgs(1, 0, _sw_light1);
+    _sw_light1->Bind(1, sw_light_cb);
 
+    _sw_light2->AddArgs(0, 0, _sw_light2);
+    _sw_light2->Bind(0, sw_light_cb);
+    _sw_light2->AddArgs(1, 0, _sw_light2);
+    _sw_light2->Bind(1, sw_light_cb);
+#ifdef SHOW_AIR
     memcpy(_sw_air_1->Canvas(0)->frameBuffer(), ImageResource_home_air_background_228x184, 228 * 184 / 2);
     _sw_air_1->Canvas(0)->setTextDatum(TC_DATUM);
     _sw_air_1->Canvas(0)->setTextSize(26);
-   
-    {
-        _sw_air_1->Canvas(0)->drawString("Bedroom", 114, 152);
-    }
+    _sw_air_1->Canvas(0)->drawString("Bedroom", 114, 152);
     memcpy(_sw_air_1->Canvas(1)->frameBuffer(), _sw_air_1->Canvas(0)->frameBuffer(), 228 * 184 / 2);
     _sw_air_1->Canvas(0)->setTextSize(36);
     _sw_air_1->Canvas(0)->drawString("OFF", 114, 108);
@@ -122,10 +229,7 @@ Frame_Home::Frame_Home(void)
     memcpy(_sw_air_2->Canvas(0)->frameBuffer(), ImageResource_home_air_background_228x184, 228 * 184 / 2);
     _sw_air_2->Canvas(0)->setTextDatum(TC_DATUM);
     _sw_air_2->Canvas(0)->setTextSize(26);
-   
-    {
-        _sw_air_2->Canvas(0)->drawString("Living Room", 114, 152);
-    }
+    _sw_air_2->Canvas(0)->drawString("Living Room", 114, 152);
     memcpy(_sw_air_2->Canvas(1)->frameBuffer(), _sw_air_2->Canvas(0)->frameBuffer(), 228 * 184 / 2);
     _sw_air_2->Canvas(0)->setTextSize(36);
     _sw_air_2->Canvas(0)->drawString("OFF", 114, 108);
@@ -174,12 +278,10 @@ Frame_Home::Frame_Home(void)
     _sw_air_2->AddArgs(1, 1, _key_air_2_minus);
     _sw_air_2->AddArgs(1, 2, _sw_air_2);
     _sw_air_2->Bind(1, key_home_air_state1_cb);
-
-   
-    {
-        exitbtn("Home");
-        _canvas_title->drawString("Control Panel", 270, 34);
-    }
+#endif
+    
+    exitbtn("Home");
+    _canvas_title->drawString("Control Panel", 270, 34);
 
     _key_exit->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _key_exit->Bind(EPDGUI_Button::EVENT_RELEASED, &Frame_Base::exit_cb);
@@ -189,31 +291,56 @@ Frame_Home::~Frame_Home(void)
 {
     delete _sw_light1;
     delete _sw_light2;
+#ifdef SHOW_SOCKET    
     delete _sw_socket1;
     delete _sw_socket2;
+#endif    
+#ifdef SHOW_AIR    
     delete _sw_air_1;
     delete _sw_air_2;
     delete _key_air_1_plus;
     delete _key_air_1_minus;
     delete _key_air_2_plus;
     delete _key_air_2_minus;
+#endif    
 }
 
 int Frame_Home::init(epdgui_args_vector_t &args)
 {
+    // this->mqtt = new MqttClient(WiFi&);
+    // this->mqtt->setup();
     _is_run = 1;
     M5.EPD.Clear();
     _canvas_title->pushCanvas(0, 8, UPDATE_MODE_NONE);
     EPDGUI_AddObject(_sw_light1);
     EPDGUI_AddObject(_sw_light2);
+#ifdef SHOW_SOCKET    
     EPDGUI_AddObject(_sw_socket1);
     EPDGUI_AddObject(_sw_socket2);
+#endif    
+#ifdef SHOW_AIR    
     EPDGUI_AddObject(_sw_air_1);
     EPDGUI_AddObject(_sw_air_2);
     EPDGUI_AddObject(_key_air_1_plus);
     EPDGUI_AddObject(_key_air_1_minus);
     EPDGUI_AddObject(_key_air_2_plus);
     EPDGUI_AddObject(_key_air_2_minus);
+#endif
     EPDGUI_AddObject(_key_exit);
+
+    if (WiFi.status() == WL_CONNECTED) {
+        mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToMqtt));
+        mqttClient.setServer("192.168.99.100",1883);
+        mqttClient.setCredentials("module-user","module-pass");
+        mqttClient.setClientId("test1");
+        mqttClient.onConnect(onMqttConnect);
+        mqttClient.onDisconnect(onMqttDisconnect);
+        mqttClient.onSubscribe(onMqttSubscribe);
+        mqttClient.onUnsubscribe(onMqttUnsubscribe);
+        mqttClient.onMessage(onMqttMessage);
+        mqttClient.onPublish(onMqttPublish);
+        mqttClient.connect();
+    }
+
     return 3;
 }

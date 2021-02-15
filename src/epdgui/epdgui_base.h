@@ -31,6 +31,8 @@ public:
     void SetID(uint32_t id) { _id = id;}
     void SetCustomString(String s) {_user_custom_str = s;}
     String GetCustomString(void) {return _user_custom_str;}
+    void SetUID(String uid) { _uid = uid;}
+    String GetUID(void) { return _uid; };
 
     inline int16_t getX() {return _x;}
     inline int16_t getY() {return _y;}
@@ -41,6 +43,7 @@ public:
 
 protected:
     String _user_custom_str;
+    String _uid;
     int16_t _x, _y, _w, _h;
     int16_t _rx, _by;
     uint32_t _id;

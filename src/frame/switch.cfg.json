@@ -1,0 +1,30 @@
+topic:
+homeassistant/switch/m5paper/switch/config
+
+payload:
+
+
+{
+  "availability": [
+    {
+      "topic": "m5paper/state"
+    }
+  ],
+  "command_topic": "m5paper/light1/set",
+  "device": {
+    "identifiers": [
+      "esp32_m5paper"
+    ],
+    "manufacturer": "M5Stack",
+    "model": "M5Paper",
+    "name": "m5paper",
+    "sw_version": "0.0.1-dev"
+  },
+  "json_attributes_topic": "m5paper/button1",
+  "name": "m5paper",
+  "payload_off": "OFF",
+  "payload_on": "ON",
+  "state_topic": "zigbee2mqtt/m5paper",
+  "unique_id": "m5paper_v1",
+  "value_template": "{{ value_json.state }}"
+}
