@@ -1,17 +1,20 @@
 #include "homeassistant.h"
-#include <AsyncMqttClient.h>
 #include <jsmn.h>
 #include <WiFi.h>
 
 
-HomeAssistantMqtt hassio;
+// HomeAssistantMqtt hassio;
 
-HomeAssistantMqtt::HomeAssistantMqtt() 
+HomeAssistantMqtt::HomeAssistantMqtt(String host, uint16_t port, String username, String password) 
 {
-		mqttClient.onConnect([this](bool sessionPresent) { onMqttConnect(sessionPresent); });
-		mqttClient.onDisconnect([this](AsyncMqttClientDisconnectReason reason) { onMqttDisconnect(reason);});
-		mqttClient.onMessage([this](char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) { onMqttMessage(topic,payload,properties,len,index,total);});
-		
+	_host=host;
+	_port=port;
+	_username=username;
+	_password=password;
+
+	mqttClient.onConnect([this](bool sessionPresent) { onMqttConnect(sessionPresent); });
+	mqttClient.onDisconnect([this](AsyncMqttClientDisconnectReason reason) { onMqttDisconnect(reason);});
+	mqttClient.onMessage([this](char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) { onMqttMessage(topic,payload,properties,len,index,total);});
 }
 
 HomeAssistantMqtt::~HomeAssistantMqtt()
@@ -19,21 +22,22 @@ HomeAssistantMqtt::~HomeAssistantMqtt()
 	mqttClient.disconnect();
 }
 
-int HomeAssistantMqtt::connect(const char *host, uint16_t port)
+int HomeAssistantMqtt::connect()
 {
-		if (WiFi.status() != WL_CONNECTED) {
-			Serial.println("wifi not connected");
-			return 1;
-		}
+	if (WiFi.status() != WL_CONNECTED) {
+		Serial.println("wifi not connected");
+		return 1;
+	}
 
-	  mqttClient.setServer(host, port);
-		mqttClient.setCredentials("module-user", "module-pass");
-		mqttClient.setClientId("test1");
-		// mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(2000), pdFALSE, (void *)0, reinterpret_cast<TimerCallbackFunction_t>(connectToMqtt));
-		// mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(2000), pdFALSE, (void *)0, [this]() { connect(); } );
-		Serial.println("Connecting to MQTT...");
-		mqttClient.connect();
-		return 0;
+	mqttClient.setServer(_host.c_str(), _port);
+	mqttClient.setCredentials(_username.c_str(), _password.c_str());
+	// mqttClient.setClientId("test1");
+
+	// mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(2000), pdFALSE, (void *)0, reinterpret_cast<TimerCallbackFunction_t>(connect));
+	// mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(2000), pdFALSE, (void *)0, [this]() { connect(); } );
+	Serial.println("Connecting to MQTT...");
+	mqttClient.connect();
+	return 0;
 }
 
 void HomeAssistantMqtt::disconnect()
@@ -41,7 +45,7 @@ void HomeAssistantMqtt::disconnect()
 	mqttClient.disconnect();
 }
 
-std::string getToken(std::string s, std::string delimiter, int idx)
+std::string HomeAssistantMqtt::getToken(std::string s, std::string delimiter, int idx)
 {
 	size_t pos = 0;
 	size_t cnt = 0;
@@ -58,7 +62,9 @@ std::string getToken(std::string s, std::string delimiter, int idx)
 	}
 	return s;
 }
-static int dump(const char *js, jsmntok_t *t, size_t count, int indent) {
+
+int dump(const char *js, jsmntok_t *t, size_t count, int indent) 
+{
   int i, j, k;
   jsmntok_t *key;
   if (count == 0) {
@@ -132,12 +138,12 @@ void HomeAssistantMqtt::onMqttConnect(bool sessionPresent)
 void HomeAssistantMqtt::onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
 {
 	Serial.println("Disconnected from MQTT.");
-	// if (reconnect) {
-	// 	if (WiFi.isConnected())
-	// 	{
-	// 		xTimerStart(mqttReconnectTimer, 0);
-	// 	}
-	// }
+	if (reconnect) {
+		if (WiFi.isConnected())
+		{
+			xTimerStart(mqttReconnectTimer, 0);
+		}
+	}
 }
 void HomeAssistantMqtt::setLight(String deviceName, String lightName, boolean state)
 {

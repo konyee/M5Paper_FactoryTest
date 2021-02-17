@@ -8,6 +8,7 @@
 #include "services/homeassistant.h"
 
 QueueHandle_t xQueue_Info = xQueueCreate(20, sizeof(uint32_t));
+HomeAssistantMqtt* hassio;
 
 void WaitForUser(void)
 {
@@ -128,7 +129,9 @@ void SysInit_Start(void)
                 frame_wifiscan->SetConnected(GetWifiSSID(), WiFi.RSSI());
 
                 log_e("Connected to WiFi: %s %d",GetWifiSSID(), WiFi.RSSI());
-                hassio.connect("192.168.99.100");
+
+                hassio = new HomeAssistantMqtt("192.168.99.100",1883,"module-user", "module-pass");
+                hassio->connect();
                 break;
             }
         }

@@ -65,7 +65,9 @@ void key_home_air_state1_cb(epdgui_args_vector_t &args)
 void sw_light_cb(epdgui_args_vector_t &args)
 {
 	EPDGUI_Switch *sw = ((EPDGUI_Switch *)(args[0]));
-	hassio.setLight("eloszoba_vilagitas","eloszoba", sw->getState() );
+	extern HomeAssistantMqtt* hassio;
+	if (hassio)
+		hassio->setLight("eloszoba_vilagitas","eloszoba", sw->getState() );
 }
 
 Frame_Home::Frame_Home(void)
