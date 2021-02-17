@@ -5,6 +5,7 @@
 #include "global_setting.h"
 #include "resources/binaryttf.h"
 #include <WiFi.h>
+#include "services/homeassistant.h"
 
 QueueHandle_t xQueue_Info = xQueueCreate(20, sizeof(uint32_t));
 
@@ -125,7 +126,9 @@ void SysInit_Start(void)
             if (WiFi.status() == WL_CONNECTED)
             {
                 frame_wifiscan->SetConnected(GetWifiSSID(), WiFi.RSSI());
+
                 log_e("Connected to WiFi: %s %d",GetWifiSSID(), WiFi.RSSI());
+                hassio.connect("192.168.99.100");
                 break;
             }
         }
